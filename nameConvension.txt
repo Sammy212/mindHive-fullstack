@@ -1,0 +1,6 @@
+username
+password
+firstname
+lastname
+confirmpass
+desc description
