@@ -25,7 +25,7 @@ export const registerUser = async (req, res) => {
       username: user.username,
       id: user._id
     }, process.env.JWT_KEY, {expiresIn: '1h'}) // a user can't use the same token after an hour of no use
-    res.status(200).json(newUser);
+    res.status(200).json({user, token});
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -46,7 +46,18 @@ export const loginUser = async (req, res) => {
             const validity = await bcrypt.compare(password, user.password)
 
 
-            validity? res.status(200).json(user): res.status(400).json("Wrong Login Details")
+            if(!validity)
+            {
+              res.status(400).json("Incorrect Password")
+            }
+            else {
+              // Use JWT for tokens
+              const token = jwt.sign({
+                username: user.username,
+                id: user._id
+              }, process.env.JWT_KEY, {expiresIn: '1h'}) // a user can't use the same token after an hour of no use
+              res.status(200).json({user, token});
+            }
         }
         else{
             res.status(404).json("Wrong Login Details")
