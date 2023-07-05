@@ -1,5 +1,6 @@
 import UserModel from "../Models/userModel.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 // Registering a new User
 export const registerUser = async (req, res) => {
@@ -13,11 +14,17 @@ export const registerUser = async (req, res) => {
   try {
 
     const oldUser = await UserModel.findOne({username})
-    if(oldUser) 
+    if(oldUser) // if old user exist
     {
       return res.status(400).json({message: "user already exist!"})
     }
-    await newUser.save();
+    const user = await newUser.save();
+
+    // Use JWT for tokens
+    const token = jwt.sign({
+      username: user.username,
+      id: user._id
+    }, process.env.JWT_KEY, {expiresIn: '1h'}) // a user can't use the same token after an hour of no use
     res.status(200).json(newUser);
   } catch (error) {
     res.status(500).json({ message: error.message });
